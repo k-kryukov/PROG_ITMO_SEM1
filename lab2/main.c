@@ -30,5 +30,6 @@ int main(void) {
 	printf_value(v);	
 	printf("\n");
 	
+	system("pause");
 	return 0;
 }
