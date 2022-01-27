@@ -6,7 +6,9 @@
 #include <stdbool.h>
 
 bool isLet(char c) {
-	return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9');
+	return ('a' <= c && c <= 'z') 
+		|| ('A' <= c && c <= 'Z') 
+		|| ('0' <= c && c <= '9');
 }
 
 int main(int argc, char** argv) {
@@ -32,17 +34,19 @@ int main(int argc, char** argv) {
 	s[1] = '\0';
 	while (!feof(f)) {
 		char c = fgetc(f);
-		if (c == EOF) {
+		if (c == EOF)
 			break;
-		}
+		
 		s[written++] = c;
 		s[written] = '\0';
+		
 		if (written == capacity) {
 			char* tmp = (char*)malloc(sizeof(char) * (capacity * 2 + 1));
 			capacity *= 2;
 			for (int i = 0; i < written; i++)
 				tmp[i] = s[i];
 			tmp[written] = '\0';
+			
 			free(s);
 			s = 0;
 			s = tmp;
