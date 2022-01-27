@@ -10,18 +10,26 @@ const int sec_in_day = 86400;
 
 const int sec_in_hour = 3600;
 
+int max(int a, int b) {
+	return ((a > b) ? a : b); 
+}
+
 bool read_line(FILE* input, char** dest) {
 	if (feof(input))
 		return false;
+	
 	int size = 2;
 	int already_read = 0;
 	char* res = malloc(sizeof(char) * size);
 	char c;
+	
 	while (!feof(input) && (c = fgetc(input)) != '\n') {
 		res[already_read++] = c;
+		
 		if (already_read == size - 1) {
 			size *= 2;
 			char* temp = malloc(sizeof(char) * size);
+			
 			for (int i = 0; i < already_read; ++i)
 				temp[i] = res[i];
 			res[already_read] = '\0';
@@ -29,6 +37,7 @@ bool read_line(FILE* input, char** dest) {
 			res = temp;
 		}
 	}
+	
 	res[already_read] = '\0';
 	*dest = res;
 }
@@ -72,21 +81,21 @@ int get_year(char* s) {
 
 int sec_from_string(char* t) {
 	int days = 10 * (t[0] - '0') + (t[1] - '0') - 1;
-	//int month = get_month(t + 3);
-	//int year = get_year(t + 7);
 	int hours = 10 * (t[12] - '0') + (t[13] - '0');
 	int minutes = 10 * (t[15] - '0') + (t[16] - '0');
 	int seconds = 10 * (t[18] - '0') + (t[19] - '0');
 	
-	return (seconds + 60 * minutes + hours * sec_in_hour + days * sec_in_day);// +month * sec_in_month + year * 31536000);
+	return (seconds + 60 * minutes + hours * sec_in_hour + days * sec_in_day);
 }
 
 const char* year_by_number(int y) {
 	char* res = (char*)malloc(sizeof(char) * 4);
+	
 	res[0] = y / 1000 + '0';
 	res[1] = (y / 100) % 10 + '0';
 	res[2] = (y / 10) % 10 + '0';
 	res[3] = y % 10 + '0';
+	
 	return res;
 }
 
@@ -125,6 +134,7 @@ const char* get_date(int seconds) {
 	// WE COUNT SECONDS SINCE 00:00:00 1 JULY 1995
 	char* s = (char*)malloc(sizeof(char) * 21);
 	strcpy(s, "  /Jul/1995:  :  :  ");
+	
 	int remaining = seconds;
 	int days = remaining / sec_in_day + 1;
 	remaining %= sec_in_day;
@@ -133,6 +143,7 @@ const char* get_date(int seconds) {
 	int min = remaining / 60;
 	remaining %= 60;
 	int sec = remaining;
+	
 	s[0] = (days / 10) + '0';
 	s[1] = (days % 10) + '0';
 	s[12] = (hours / 10) + '0';
@@ -141,6 +152,7 @@ const char* get_date(int seconds) {
 	s[16] = (min % 10) + '0';
 	s[18] = (sec / 10) + '0';
 	s[19] = (sec % 10) + '0';
+	
 	return s;
 }
 
@@ -200,8 +212,8 @@ int main() {
 	// END OF FILE ANALYZING
 
 	printf("There are %d bad requests (with error 5xx)\n\n", counter_bad);
-	printf("Type time_window to analyze file or -1 for leaving!\n");
 	while (1) {
+		printf("Type time_window to analyze file or -1 for leaving!\n");
 		int time_window;
 		scanf("%i", &time_window);
 		if (time_window == -1) {
@@ -218,9 +230,11 @@ int main() {
 		for (int i = left; i <= right; ++i)
 			how_many_requests += timings[i];
 		max_req = how_many_requests;
+		
 		while (right + 1 < sec_in_month) {
 			how_many_requests -= timings[left++];
 			how_many_requests += timings[++right];
+			
 			if (max_req < how_many_requests) {
 				max_req = how_many_requests;
 				max_left = left;
@@ -235,6 +249,7 @@ int main() {
 			while (second < req_amount && request[second] - request[first] < time_window) {
 				++second;
 			}
+			
 			--second;
 			max_req_2 = max(max_req_2, second - first + 1); // length of segment: b - a + 1
 			++first;
