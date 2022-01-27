@@ -9,22 +9,21 @@ byte get_bit(byte num, size_t index, size_t bit_count) { // from left to right a
 
 void print_gen(byte** begin, size_t amount, int width, int height) {
 	byte** cur = begin;
+	
 	for (int k = 0; k < amount; ++k) {
 		byte** tmp = game_step(cur, width, height);
 		cur = tmp;
+		
 		for (int i = 0; i < height; ++i) {
 			for (int j = 0; j < width; ++j)
 				printf("%d", cur[i][j]);
 			printf("\n");
 		}
+		
 		printf("\n\n\n");
 	}
 }
-int func(int arg1, unsigned long arg2) {
-	return 0;
-}
 
-int typedef int_t, * intp_t, (*fp)(int, unsigned long), arr_t[10];
 int main(int argc, char* argv[]) {
 	FILE* input;
 	FILE* output;
@@ -37,9 +36,9 @@ int main(int argc, char* argv[]) {
 		printf("ERROR!\n");
 		return -1;
 	}
+	
 	int freq = 10;
 	int mx_iter = INF;
-	
 	char* dir_name = (char*)malloc(sizeof(char) * 50);
 	
 	if (argc != 1) {
@@ -64,7 +63,6 @@ int main(int argc, char* argv[]) {
 	strcpy(path, "mkdir ");
 	system(strcat(path, dir_name));
 	
-	strcat(dir_name, "\\");
 	if (argc >= 9) {
 		printf("%s %s %s", argv[4], argv[6], argv[8]);
 		printf("%d %d\n", mx_iter, freq);
@@ -73,21 +71,25 @@ int main(int argc, char* argv[]) {
 	// ANALYZING COMMAND LINE INSTRUCTIONS HAS JUST FINISHED :)
 	char* file_name = malloc(sizeof(char) * 200);
 	double prev_time = 0;
+	strcat(dir_name, "\\");
 	strcpy(file_name, dir_name); // название директории
-	//strcat(file_name, "\\");
 	free(path);
+	
 	double delta = 1.0 / freq * CLOCKS_PER_SEC;
 	int counter = 0;
 	FILE* prev = 0;
 	FILE* cur = 0;
 	char* temp_buffer = malloc(sizeof(char) * 4);
+	
 	while (counter < mx_iter) {
 		char* prev_file = 0;
 		char* cur_file = malloc(sizeof(char) * 200);
+		
 		strcpy(cur_file, file_name);
 		strcat(cur_file, _itoa(counter, temp_buffer, 10));
 		strcat(cur_file, ".bmp");
-		Sleep(1.0 / freq * CLOCKS_PER_SEC);
+		Sleep(1.0 / freq * CLOCKS_PER_SEC); // путь до текущего снимка
+		
 		if (counter == 0) {
 			output = fopen(cur_file, "wb");
 		}
@@ -97,30 +99,35 @@ int main(int argc, char* argv[]) {
 			strcat(prev_file, "\\");
 			strcat(prev_file, _itoa(counter - 1, temp_buffer, 10));
 			strcat(prev_file, ".bmp");
+			
 			input = fopen(prev_file, "rb");
 			output = fopen(cur_file, "wb");
+			
 			free(prev_file);
 		}
 		free(cur_file);
+		
 		BMP_FILE_HEADER* bfh = (BMP_FILE_HEADER*)malloc(sizeof(BMP_FILE_HEADER));
 		BMP_INFO_HEADER* bih = (BMP_INFO_HEADER*)malloc(sizeof(BMP_INFO_HEADER));
 		readHeader(bfh, input); // конец в d
 		readInfo(bih, input);
+		
 		size_t bit_in_width = (bih->biWidth * bih->biBitCount);
 		size_t real_width = (bit_in_width % 32 == 0
 			? bit_in_width
 			: bit_in_width + (32 - (bit_in_width % 32)));
+		
 		byte** pixels = malloc(sizeof(byte*) * bih->biHeight);
 		for (int i = 0; i < bih->biHeight; ++i)
 			pixels[i] = malloc(sizeof(byte) * real_width);
 
 		fseek(input, 0, SEEK_SET);
-
 		fseek(input, bfh->bfOffBits, SEEK_SET);
 
 		for (int i = bih->biHeight - 1; i >= 0; --i) {
 			byte* buffer = malloc(sizeof(byte) * (real_width / 8));
 			int j = 0;
+			
 			while (j < ceil((double)bih->biWidth / 8)) {
 				fread(buffer + j, sizeof(byte), 1, input);
 				++j;
@@ -130,11 +137,13 @@ int main(int argc, char* argv[]) {
 				fread(buffer + j, sizeof(byte), 1, input);
 				++j;
 			}
+			
 			int line_index = 0; // индекс €чейки в двумерном массиве в i-й строке
 			int worthful_bits = bih->biBitCount * bih->biWidth;
 			for (j = 0; j < worthful_bits; ++j) {
 				pixels[i][j / bih->biBitCount] = get_bit(buffer[j / 8], j % 8, bih->biBitCount);
 			}
+			
 			free(buffer);
 		}
 
@@ -150,12 +159,15 @@ int main(int argc, char* argv[]) {
 		pixels = game_step(pixels, bih->biWidth, bih->biHeight);
 
 		write_generation(pixels, bih->biHeight, bih->biWidth, input, output, bfh->bfOffBits);
+		
 		for (int i = 0; i < bih->biHeight; ++i)
 			free(pixels[i]);
 		free(pixels);
 		fclose(input);
+		
 		++counter;
 	}
+	
 	free(file_name);
 	return 0;
 }

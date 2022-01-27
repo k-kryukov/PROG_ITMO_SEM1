@@ -28,14 +28,17 @@ bool ok(int i, int j, int mxi, int mxj) {
 
 int how_many_neigh(byte** field, int y, int x, size_t h, size_t w) {
 	int counter = 0;
+	
 	for (int i = y - 1; i <= y + 1; ++i) {
 		for (int j = x - 1; j <= x + 1; ++j) {
 			if (i == y && j == x)
 				continue;
+			
 			if (ok(i, j, h, w) && field[i][j])
 				++counter;
 		}
 	}
+	
 	return counter;
 }
 
@@ -48,6 +51,7 @@ byte** game_step(byte** field, size_t w, size_t h) {
 	for (int i = 0; i < h; ++i) {
 		for (int j = 0; j < w; ++j) {
 			int counter = how_many_neigh(field, i, j, h, w);
+			
 			if (field[i][j] == 1) { // ALIVE
 				if (counter == 2 || counter == 3)
 					temp_field[i][j] = 1;
@@ -61,14 +65,17 @@ byte** game_step(byte** field, size_t w, size_t h) {
 				temp_field[i][j] = 0;
 		}
 	}
+	
 	for (int i = 0; i < h; ++i)
 		free(field[i]);
 	free(field);
+	
 	return temp_field;
 }
 
 void write_generation(byte** pixels, int h, int w, FILE* in, FILE* out, size_t offset) {
 	fseek(in, 0, SEEK_SET);
+	
 	for (int i = 0; i < offset; ++i) {
 		byte buf;
 		fread(&buf, sizeof(byte), 1, in);
@@ -81,16 +88,19 @@ void write_generation(byte** pixels, int h, int w, FILE* in, FILE* out, size_t o
 		byte accum = 0; // ×ÅÐÍÛÌ ÊÐÀÑßÒÑß ÍÓËÅÂÛÅ ÁÈÒÛ (ÇÀÊÐÀØÈÂÀÞÒÑß)
 		int j = 0;
 		int already_sent = 0;
+		
 		while (j < w) {
 			accum += (!pixels[i][j] << (7 - (j % 8)));
+			
 			if ((j + 1) % 8 == 0) {
 				fwrite(&accum, sizeof(byte), 1, out);
 				already_sent = (already_sent + 1) % 4;
 				accum = 0;
 			}
+			
 			++j;
 		}
-		if (w % 32 != 0) {
+		if (w % 32 != 0) { // äîñûëàåì áèòû äî êðàòíîñòè 32 (4 áàéòà)
 			if (already_sent == 0) {
 				fwrite(&accum, sizeof(byte), 1, out);
 				accum = 0;
